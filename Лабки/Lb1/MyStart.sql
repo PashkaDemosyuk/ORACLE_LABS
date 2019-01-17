@@ -1,0 +1,29 @@
+CREATE TABLE BAV_t( x number(3), s varchar2(50));
+
+--11
+INSERT INTO BAV_t VALUES(1, 'Ann');
+--INSERT ALL
+INSERT INTO BAV_t VALUES(2, 'Polina');
+INSERT INTO BAV_t VALUES(3, 'Pavel');
+COMMIT;
+
+SELECT * FROM BAV_t;
+
+--12
+UPDATE BAV_t
+SET x = 4
+WHERE x<3;
+
+COMMIT;
+
+--13
+SELECT COUNT(*) FROM BAV_t
+WHERE s LIKE '%a%';
+
+--14
+
+DELETE BAV_t
+WHERE S ='Ann';
+
+--15
+DROP TABLE BAV_t;

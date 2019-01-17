@@ -1,0 +1,72 @@
+/*1*/
+select name, open_mode, con_id, total_size from v$pdbs;
+
+/*2*/
+select instance_name from v$Instance;
+
+/*3*/
+select comp_name, status, version from DBA_REGISTRY;
+
+/*5*/
+select name, open_mode, total_size from v$pdbs;
+
+/*6*/
+CREATE TABLESPACE TS_DPA_PDB1
+  DATAFILE 'C:\!Labs\TS_DPA_PDB1.dbf'
+  SIZE 7M
+  AUTOEXTEND ON NEXT 5M
+  MAXSIZE 20M
+  EXTENT MANAGEMENT LOCAL;
+  
+DROP TABLESPACE TS_DPA_PDB1; 
+/*///////*/
+CREATE TEMPORARY TABLESPACE TS_DPA_PDB_TEMP1
+  TEMPFILE 'C:\!Labs\TS_DPA_PDB_TEMP1.dbf'
+  SIZE 5M
+  AUTOEXTEND ON NEXT 3M
+  MAXSIZE 30M
+  EXTENT MANAGEMENT LOCAL;
+  
+DROP TABLESPACE TS_DPA_PDB_TEMP1; 
+
+/*///////*/
+CREATE PROFILE PF_U2_DPA_PDB LIMIT
+PASSWORD_LIFE_TIME 180 
+SESSIONS_PER_USER 3
+FAILED_LOGIN_ATTEMPTS 7
+PASSWORD_LOCK_TIME 1 
+PASSWORD_REUSE_TIME 10 
+PASSWORD_GRACE_TIME DEFAULT 
+CONNECT_TIME 180 
+IDLE_TIME 30 ;
+/*///////*/
+ALTER USER U2_DPA_PDB
+DEFAULT TABLESPACE TS_DPA_PDB1 QUOTA UNLIMITED ON TS_DPA_PDB1
+TEMPORARY TABLESPACE TS_DPA_PDB_TEMP1
+PROFILE PF_U1_DPA_PDB
+ACCOUNT UNLOCK;
+
+
+/*7*/
+CREATE TABLE DPA_table(name varchar2(50), surname varchar(50));
+INSERT INTO DPA_table values('Pavel', 'Demosuk');
+INSERT INTO DPA_table values('Polina', 'Shenets');
+INSERT INTO DPA_table values('Hanna', 'Babaka');
+SELECT NAME, SURNAME FROM DPA_table;
+
+/*8*/
+SELECT TABLESPACE_NAME, STATUS, CONTENTS LOGGING FROM SYS.DBA_TABLESPACES;
+SELECT * FROM USER_ROLE_PRIVS;
+SELECT * FROM USER_USERS;
+SELECT * FROM USER_SYS_PRIVS;
+SELECT * FROM USER_TAB_PRIVS;
+SELECT * FROM ROLE_TAB_PRIVS;
+
+/*9-10*/
+--connect to CDB
+CREATE USER C##DPA identified by 1111;
+grant create session to C##DPA;
+grant create session to C##YYY;
+
+
+select username, osuser, machine, program, service_name from v$session where username IS NOT NULL order by username ASC;

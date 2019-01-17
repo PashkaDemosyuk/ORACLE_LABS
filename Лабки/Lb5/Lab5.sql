@@ -1,0 +1,104 @@
+SELECT tablespace_name, contents FROM DBA_TABLESPACES;
+
+DROP TABLESPACE BAV_QDATA INCLUDING CONTENTS;
+
+CREATE TABLESPACE BAV_QDATA
+  DATAFILE 'D:\5sem\BD\LB\Lb5\BAV_QDATA.dbf'
+  SIZE 10 M
+  OFFLINE
+  
+ALTER TABLESPACE BAV_QDATA ONLINE
+
+ALTER USER BAV
+QUOTA 2 m ON BAV_QDATA
+
+--user BAV
+CREATE TABLE Example_table(
+id number(15) PRIMARY KEY,
+name varchar2(10)) TABLESPACE BAV_QDATA;
+
+DROP TABLE Example_table;
+
+
+INSERT INTO Example_table values(1, 'ANN');
+INSERT INTO Example_table values(2, 'ANN');
+INSERT INTO Example_table values(3, 'ANN');
+
+
+SELECT owner, segment_name, segment_type, tablespace_name, bytes, blocks, buffer_pool
+FROM DBA_SEGMENTS
+WHERE tablespace_name='BAV_QDATA';
+
+COMMIT;
+
+--таблица при удалении не сразу освобождают занятое пространство
+--а поначалу переименовывается сегмент и помещается в корзину с возможностью восстановления
+--безвозвратно с первого раза - PURGE
+SELECT * FROM USER_RECYCLEBIN;
+
+FLASHBACK TABLE  Example_table TO BEFORE DROP;
+
+
+BEGIN
+  FOR k IN 4..10004
+  LOOP
+    INSERT INTO Example_table VALUES(k, 'A');
+  END LOOP;
+  COMMIT;
+END;
+
+SELECT * FROM DBA_EXTENTS
+WHERE TABLESPACE_NAME='BAV_QDATA';
+
+
+DROP TABLESPACE BAV_QDATA INCLUDING CONTENTS AND DATAFILES;
+
+
+  
+SELECT group#, sequence#, bytes, members, status, first_change# FROM V$LOG;
+
+SELECT * FROM V$LOGFILE;
+ALTER SYSTEM SWITCH LOGFILE;
+ALTER DATABASE ADD LOGFILE GROUP 4 'D:\app\oracle_user\oradata\orcl\REDO04.LOG'
+SIZE 50 m BLOCKSIZE 512;
+ALTER DATABASE ADD LOGFILE MEMBER 'D:\app\oracle_user\oradata\orcl\REDO041.LOG' TO GROUP 4;
+ALTER DATABASE ADD LOGFILE MEMBER 'D:\app\oracle_user\oradata\orcl\REDO042.LOG' TO GROUP 4;
+
+ALTER DATABASE DROP LOGFILE MEMBER 'D:\app\oracle_user\oradata\orcl\REDO042.LOG';
+ALTER DATABASE DROP LOGFILE MEMBER 'D:\app\oracle_user\oradata\orcl\REDO041.LOG';
+
+ALTER DATABASE DROP LOGFILE GROUP 4;
+
+
+SELECT NAME, LOG_MODE FROM V$DATABASE;
+SELECT INSTANCE_NAME, ARCHIVER, ACTIVE_STATE FROM V$INSTANCE;
+
+
+--connect /as sysdba
+
+
+--shutdown immediate;
+--startup mount;
+
+
+
+--alter database archivelog;
+--alter database open;
+
+
+SELECT * FROM V$ARCHIVED_LOG;
+SELECT NAME, FIRST_CHANGE#, NEXT_CHANGE# FROM V$ARCHIVED_LOG;
+
+ARCHIVE LOG LIST;
+SHOW PARAMETER DB_RECOVERY;
+
+SELECT NAME FROM V$CONTROLFILE;
+SHOW PARAMETER CONTROL;
+
+ALTER DATABASE BACKUP CONTROLFILE TO TRACE;
+
+CREATE PFILE = 'BAV_PFILE.ora' FROM SPFILE;
+CREATE SPFILE ='SPFILEORCL1.ora' FROM PFILE='p1.ora';
+
+SELECT * FROM V$PWFILE_USERS;
+SELECT * FROM V$DIAG_INFO;

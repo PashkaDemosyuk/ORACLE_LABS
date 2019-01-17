@@ -1,0 +1,123 @@
+CREATE TABLESPACE TS_BAV
+  DATAFILE 'D:\5sem\BD\LB\Lb2\TS_BAV.dbf'
+  SIZE 7 m
+  AUTOEXTEND ON NEXT 5 m
+  MAXSIZE 20 m
+  EXTENT MANAGEMENT LOCAL;
+  
+DROP TABLESPACE TS_BAV;
+  
+CREATE TEMPORARY TABLESPACE TS_BAV_TEMP
+  TEMPFILE 'D:\5sem\BD\LB\Lb2\TS_TEMP_BAV.dbf'
+  SIZE 5 m
+  AUTOEXTEND ON NEXT 3 m
+  MAXSIZE 30 m
+  EXTENT MANAGEMENT LOCAL;
+
+DROP TABLESPACE TS_BAV_TEMP;
+  
+--табличные пр-ва, списки всех файлов
+SELECT * FROM SYS.DBA_TABLESPACES;
+--!!СПИСКИ ВСЕХ ФАЙЛОВ
+
+alter session set "_ORACLE_SCRIPT"=true;
+
+CREATE ROLE RL_BAVCORE; 
+
+DROP ROLE RL_BAVCORE;
+
+SELECT * FROM dba_roles WHERE ROLE LIKE 'RL%';
+
+
+GRANT CREATE SESSION,
+      CREATE TABLE,
+      CREATE VIEW,
+      CREATE PROCEDURE
+      TO RL_BAVCORE;
+      
+REVOKE ALL privileges ON DBA_SYS_PRIVS FROM C##RL_BAVCORE;
+      
+CREATE PROFILE PF_BAVCORE LIMIT
+  PASSWORD_LIFE_TIME 180 --истечение срока годности пароля
+  SESSIONS_PER_USER 3 
+  FAILED_LOGIN_ATTEMPTS 7
+  PASSWORD_LOCK_TIME 1 --время блокировки после неудачных попыток
+  PASSWORD_REUSE_TIME 10 --повторное использование пароля, дни
+  PASSWORD_GRACE_TIME DEFAULT --предупреждение о смене пароля
+  CONNECT_TIME 180 --время подключ, мин
+  IDLE_TIME 30 --простой, минуты
+  
+  
+DROP PROFILE PF_BAVCORE;
+
+SELECT DISTINCT PROFILE FROM DBA_PROFILES;
+SELECT * FROM DBA_PROFILES WHERE PROFILE = 'PF_BAVCORE';
+SELECT * FROM DBA_PROFILES WHERE PROFILE = 'DEFAULT';
+  
+CREATE USER BAVCORE IDENTIFIED BY 12345
+  DEFAULT TABLESPACE TS_BAV QUOTA UNLIMITED ON TS_BAV
+  TEMPORARY TABLESPACE TS_BAV_TEMP
+  PROFILE PF_BAVCORE
+  ACCOUNT UNLOCK
+  PASSWORD EXPIRE
+  
+  GRANT RL_BAVCORE TO BAVCORE
+  
+  DROP USER BAVCORE;
+  
+CREATE TABLE Cities(name varchar2(10), id number(4), people_count number(10));
+
+CREATE VIEW Cities_view AS
+SELECT name, people_count FROM Cities;
+
+CREATE TABLESPACE BAV_QDATA
+  DATAFILE 'D:\5sem\BD\LB\Lb2\BAV_QDATA.dbf'
+  SIZE 10 m
+  OFFLINE;
+  
+ALTER TABLESPACE BAV_QDATA ONLINE;
+
+alter session set "_ORACLE_SCRIPT"=true;
+
+CREATE USER BAV IDENTIFIED BY 12345
+  DEFAULT TABLESPACE BAV_QDATA QUOTA 2 m ON BAV_QDATA
+  PROFILE PF_BAVCORE
+  ACCOUNT UNLOCK
+  
+  
+CREATE TABLESPACE BAV_T1
+  DATAFILE 'D:\5sem\BD\LB\Lb2\BAV_T1.dbf'
+  SIZE 7 m
+  AUTOEXTEND ON NEXT 5 m
+  MAXSIZE 20 m
+  EXTENT MANAGEMENT LOCAL;
+  
+CREATE TABLE Pupils(name varchar2(50), surname varchar(50))
+TABLESPACE BAV_T1;
+
+INSERT INTO Pupils values('Hanna', 'Babaka');
+INSERT INTO Pupils values('Polina', 'Shenets');
+INSERT INTO Pupils values('Pavel', 'Demosuk');
+
+DROP TABLE Pupils;
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+
